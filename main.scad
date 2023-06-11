@@ -5,6 +5,7 @@ $wing_length = 150;
 $naca_airfoil = 4412;
 $wing_chord_length = 150;
 $rib_grid_distance = $wing_chord_length / 4 / sqrt(2);
+$airfoil_cutoff_chord_fraction = 0.98;
 
 $spar_enabled = true;
 $spar_diameter = 10.4;
@@ -34,9 +35,14 @@ module generateStructureGrid() {
 }
 
 module generateWing() {
-    translate([$wing_x_offset_chord_fraction * $wing_chord_length, 0, 0])
-    linear_extrude(height = $wing_length)
-        airfoil_poly($wing_chord_length, $naca_airfoil);
+    intersection() {
+        translate([0, -$wing_chord_length, 0])
+        cube([$airfoil_cutoff_chord_fraction * $wing_chord_length, $wing_chord_length * 2, $wing_length]);
+        
+        translate([$wing_x_offset_chord_fraction * $wing_chord_length, 0, 0])
+        linear_extrude(height = $wing_length)
+            airfoil_poly($wing_chord_length, $naca_airfoil);
+    }
 }
 
 module generateSparStructureGap() {
