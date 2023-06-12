@@ -60,7 +60,7 @@ module generateSparStructure() {
     translate([$spar_position_chord_fraction * $wing_chord_length, $spar_position_height_chord_fraction * $wing_chord_length, 0])
     linear_extrude(height = $wing_length)
     union() {
-        circle(d=$spar_diameter);
+        circle(d=$spar_diameter, $fn=30);
         translate([0, -$wing_chord_length + $spar_holding_structure_height_chord_fraction * $wing_chord_length, 0])
         square(size = [0.1, $wing_chord_length*2], center=true);
     }
