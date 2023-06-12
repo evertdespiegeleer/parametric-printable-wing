@@ -22,6 +22,31 @@ $close_airfoils = true;
   ( x + (foil_y(x,c,t) * sin( theta(x,c,m,p) ) ) )
   );
 
+module translateToMclPoint(c = 100, naca = 0015, chord_fraction = 0.5) {
+  t = ((naca%100)/100); //establish thickness/length ratio
+  m = ( (floor((((naca-(naca%100))/1000))) /100) );
+  p = ((((naca-(naca%100))/100)%10) / 10);
+
+  x = chord_fraction * c;
+  y = ( m == 0 || p == 0) ? 0 : camber(x,c,m,p);
+  translate([x, y, 0]) {
+    children();
+  }
+}
+
+module translateFromMclToSurface(c = 100, naca = 0015, chord_fraction = 0.5, upper_surface=true) {
+  t = ((naca%100)/100); //establish thickness/length ratio
+  m = ( (floor((((naca-(naca%100))/1000))) /100) );
+  p = ((((naca-(naca%100))/100)%10) / 10);
+
+  x = chord_fraction * c;
+  y_offset = ( m == 0 || p == 0) ? 0 : (upper_surface == true ? foil_y(x, c, t) : -foil_y(x, c, t));
+  
+  translate([0, y_offset, 0]) {
+    children();
+  }
+}
+
 module mcl_poly (c = 100, naca = 0015, stroke_width = 1) {
   $close_airfoils = ($close_airfoils != undef) ? $close_airfoils : false;
   $airfoil_fn = ($airfoil_fn != undef) ? $airfoil_fn : 100;
