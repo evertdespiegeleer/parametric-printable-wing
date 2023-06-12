@@ -72,9 +72,9 @@ module generateInnerStructure() {
             generateWing();
             generateStructureGrid();
         }
-        // TODO: This centerline is currently drawn on the X-axis (the chord line), which is ok for some airfoils, but definitely not for all. It'd be better to draw it on the mean camber line (MCL).
-        cube([$wing_chord_length, $center_gap, $wing_length]);
         generateSparStructureGap();
+        linear_extrude(height = $wing_length)
+            mcl_poly($wing_chord_length, $naca_airfoil, $center_gap);
     }
 }
 

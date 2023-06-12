@@ -22,6 +22,25 @@ $close_airfoils = true;
   ( x + (foil_y(x,c,t) * sin( theta(x,c,m,p) ) ) )
   );
 
+module mcl_poly (c = 100, naca = 0015, stroke_width = 1) {
+  $close_airfoils = ($close_airfoils != undef) ? $close_airfoils : false;
+  $airfoil_fn = ($airfoil_fn != undef) ? $airfoil_fn : 100;
+  res = c/$airfoil_fn; //resolution of foil poly
+  t = ((naca%100)/100); //establish thickness/length ratio
+  m = ( (floor((((naca-(naca%100))/1000))) /100) );
+  p = ((((naca-(naca%100))/100)%10) / 10);
+
+  points_upper = ( m == 0 || p == 0) ?
+  [for (i = [0:res:c]) let (x = i, y = stroke_width/2 ) [x,y]] :
+  [for (i = [0:res:c]) let (x = i, y = camber(i,c,m,p) + stroke_width/2) [x,y]];
+
+  points_lower = ( m == 0 || p == 0) ?
+  [for (i = [c:-1*res:0]) let (x = i, y = -stroke_width/2 ) [x,y]] :
+  [for (i = [c:-1*res:0]) let (x = i, y = camber(i,c,m,p) - stroke_width/2) [x,y]];
+
+  polygon(concat(points_upper,points_lower)); //draw poly
+}
+
 module airfoil_poly (c = 100, naca = 0015) {
   $close_airfoils = ($close_airfoils != undef) ? $close_airfoils : false;
   $airfoil_fn = ($airfoil_fn != undef) ? $airfoil_fn : 100;
