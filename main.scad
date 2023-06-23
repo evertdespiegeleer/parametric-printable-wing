@@ -1,25 +1,39 @@
 include <lib/airfoil.scad>
 include <lib/grid.scad>
 
-$wing_length = 18;
+// ----- Wing settings ----- 
+$wing_length = 150;
 $naca_airfoil = 4412;
 $wing_chord_length = 150;
 $rib_grid_distance = $wing_chord_length / 4 / sqrt(2);
 $airfoil_cutoff_chord_fraction = 0.98;
 
+// ----- Structure settings ----- 
+// For ribs running all the way through the wing, set this value very high (greater than then chord length).
+$rib_thickness = 1.5;
+$rib_center_support_cones_enabled = true;
+$rib_center_support_cone_inersection_diameter = 3;
+$rib_center_support_cone_angle = 40; //degrees
+
+// ----- Spar settings ----- 
 $spar_enabled = true;
 $spar_diameter = 10.4;
 // Not _really_ required, but having this as a multiple of the rib_grid_distance / 2 fraction is ideal
 $spar_position_chord_fraction = 1 / 4 / 2 * 3;
 $spar_holding_structure_height_chord_fraction = 0.055;
 
-$center_gap = 0.6;
-$rib_width = 0.2;
+// ----- Nitty gritty details ----- 
+$center_gap = 0.9;
+$rib_width = 0.1;
 $wing_x_offset_chord_fraction = 0.002;
 
 // Make the grid as high as the chord length, so every thickness of wing up to a circular profile is acceptable
 $grid_height = $wing_chord_length;
+$rib_center_support_sections_length = $wing_chord_length;
 
+// ----- Code -----
+
+/// Structure grid
 module generateStructureGrid() {
     $grid_diagonal_distance = $rib_grid_distance * sqrt(2);
     union()
@@ -33,23 +47,28 @@ module generateStructureGrid() {
     }
 }
 
-module generateWing() {
+/// Wing
+module generateWing2D() {
     intersection() {
-        translate([0, -$wing_chord_length, 0])
-        cube([$airfoil_cutoff_chord_fraction * $wing_chord_length, $wing_chord_length * 2, $wing_length]);
-        
-        translate([$wing_x_offset_chord_fraction * $wing_chord_length, 0, 0])
-        linear_extrude(height = $wing_length)
-            airfoil_poly($wing_chord_length, $naca_airfoil);
+        translate([0, -$wing_chord_length])
+        square([$airfoil_cutoff_chord_fraction * $wing_chord_length, $wing_chord_length * 2]);
+        airfoil_poly($wing_chord_length, $naca_airfoil);
     }
 }
 
+module generateWing() {
+    linear_extrude(height = $wing_length)
+        generateWing2D();
+}
+
+/// Spar
 module generateSparStructureGap() {
     if ($spar_enabled)
     translateToMclPoint($wing_chord_length, $naca_airfoil, $spar_position_chord_fraction)
     linear_extrude(height = $wing_length)
     union() {
-        circle(d=$spar_diameter + 1, $fn=30);
+        offset(delta = 1)
+            circle(d=$spar_diameter, $fn=30);
         square(size = [2, $wing_chord_length*2], center=true);
     }
 }
@@ -67,12 +86,45 @@ module generateSparStructure() {
     }
 }
 
+/// Structure
+module generateInnerStructureSupportCones() {
+    // The / 2 causes every grid intersection to have a cone
+    $grid_diagonal_distance = $rib_grid_distance * sqrt(2) / 2;
+    if ($rib_center_support_cones_enabled)
+    mclFollowingGrid(
+        $wing_chord_length,
+        $naca_airfoil,
+        ceil($wing_chord_length / $grid_diagonal_distance),
+        ceil($wing_length / $grid_diagonal_distance) + 1,
+        $grid_diagonal_distance
+        )
+    rotate([90, 0, 0])
+    union() {
+        mirror([0, 0 ,1])
+        translate([0, 0, -$rib_center_support_sections_length])
+        cylinder(h = $rib_center_support_sections_length, d1 = $rib_center_support_cone_inersection_diameter + 2 * tan($rib_center_support_cone_angle) * $rib_center_support_sections_length, d2 = $rib_center_support_cone_inersection_diameter, center = false);
+
+        translate([0, 0, -$rib_center_support_sections_length])
+        cylinder(h = $rib_center_support_sections_length, d1 = $rib_center_support_cone_inersection_diameter + 2 * tan($rib_center_support_cone_angle) * $rib_center_support_sections_length, d2 = $rib_center_support_cone_inersection_diameter, center = false);
+    }
+}
+
+module generateInnerStructureCutout() {
+    difference() {
+        linear_extrude(height = $wing_length)
+            offset(delta = -$rib_thickness)
+                generateWing2D();
+        generateInnerStructureSupportCones();
+    }
+}
+
 module generateInnerStructure() {
     difference() {
         intersection() {
             generateWing();
             generateStructureGrid();
         }
+        generateInnerStructureCutout();
         generateSparStructureGap();
         linear_extrude(height = $wing_length)
             mcl_poly($wing_chord_length, $naca_airfoil, $center_gap);
@@ -84,5 +136,3 @@ difference() {
     generateInnerStructure();
     generateSparStructure();
 }
-
-// generateSparStructure();
