@@ -2,11 +2,11 @@ include <lib/airfoil.scad>
 include <lib/grid.scad>
 
 // ----- Wing settings ----- 
-$wing_length = 165 / 4 * 4;
+$wing_length = 35;
 $naca_airfoil = 4412;
 $wing_chord_length = 165;
 $rib_grid_distance = 165 / 4 / sqrt(2);
-$airfoil_cutoff_chord_fraction = 0.98;
+$airfoil_cutoff_chord_fraction = 0.6;
 
 // ----- Structure settings ----- 
 // For ribs running all the way through the wing, set this value very high (greater than then chord length).
@@ -118,6 +118,22 @@ module generateInnerStructureCutout() {
     }
 }
 
+module generateInnerServoWingCutout2D() {
+    translateFromMclToSurface($wing_chord_length, $naca_airfoil, 0.232, upper_surface=false)
+    translateToMclPoint($wing_chord_length, $naca_airfoil, 0.232)
+    rotate([0, 0, 2])
+    translate([0, (13) / 2 + 2, 0])
+    union() {
+        square([34, 13], center=true);
+        translate([0, - (2 + 13) / 2, 0])
+        square([45, 2], center=true);
+        
+        translate([0, - (10 + 13) / 2, 0])
+        square([45, 10], center=true);
+        // translate([0, -100, 0])
+    }
+}
+
 module generateInnerStructure() {
     difference() {
         intersection() {
@@ -127,6 +143,9 @@ module generateInnerStructure() {
         generateInnerStructureCutout();
         generateSparStructureGap();
         linear_extrude(height = $wing_length)
+            offset(delta = 1)
+                generateInnerServoWingCutout2D();
+        linear_extrude(height = $wing_length)
             mcl_poly($wing_chord_length, $naca_airfoil, $center_gap);
     }
 }
@@ -135,4 +154,7 @@ difference() {
     generateWing();
     generateInnerStructure();
     generateSparStructure();
+    linear_extrude(height = $wing_length)
+        generateInnerServoWingCutout2D();
+    generateInnerServoWingCutout();
 }
