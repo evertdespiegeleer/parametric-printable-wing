@@ -2,10 +2,10 @@ include <lib/airfoil.scad>
 include <lib/grid.scad>
 
 // ----- Wing settings ----- 
-$wing_length = 150;
+$wing_length = 165 / 4 * 4;
 $naca_airfoil = 4412;
-$wing_chord_length = 150;
-$rib_grid_distance = $wing_chord_length / 4 / sqrt(2);
+$wing_chord_length = 165;
+$rib_grid_distance = 165 / 4 / sqrt(2);
 $airfoil_cutoff_chord_fraction = 0.98;
 
 // ----- Structure settings ----- 
@@ -31,7 +31,7 @@ $wing_x_offset_chord_fraction = 0.002;
 $grid_height = $wing_chord_length;
 $rib_center_support_sections_length = $wing_chord_length;
 
-// ----- Code -----
+// ----- Code ----- 
 
 /// Structure grid
 module generateStructureGrid() {
