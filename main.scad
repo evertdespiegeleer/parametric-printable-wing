@@ -2,7 +2,7 @@ include <lib/airfoil.scad>
 include <lib/grid.scad>
 
 // ----- Wing settings ----- 
-$wing_length = 165 / 4 * 4;
+$wing_length = 165 / 4 * 0.5;
 $naca_airfoil = 4412;
 $wing_chord_length = 165;
 $rib_grid_distance = 165 / 4 / sqrt(2);
@@ -61,6 +61,16 @@ module generateWing() {
         generateWing2D();
 }
 
+/// Alignment spar
+module generateAlignmentSpar2D() {
+    translate([0, -3, 0])
+    translateToMclPoint($wing_chord_length, $naca_airfoil, 0.05) {
+        circle(d=3.3, $fn=30);
+        translate([0, -$wing_chord_length / 2, 0])
+        square(size = [0.1, $wing_chord_length], center=true);
+    }
+}
+
 /// Spar
 module generateSparStructureGap() {
     if ($spar_enabled)
@@ -111,9 +121,12 @@ module generateInnerStructureSupportCones() {
 
 module generateInnerStructureCutout() {
     difference() {
-        linear_extrude(height = $wing_length)
+        linear_extrude(height = $wing_length) {
             offset(delta = -$rib_thickness)
                 generateWing2D();
+            offset(delta = 1)
+                generateAlignmentSpar2D();
+        }
         generateInnerStructureSupportCones();
     }
 }
@@ -135,4 +148,8 @@ difference() {
     generateWing();
     generateInnerStructure();
     generateSparStructure();
+    linear_extrude(height = $wing_length)
+        generateAlignmentSpar2D();
 }
+
+// generateAlignmentSpar2D();

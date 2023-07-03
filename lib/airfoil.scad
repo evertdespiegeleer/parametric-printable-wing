@@ -1,6 +1,6 @@
 // partly ripped from https://github.com/ErroneousBosch/OpenSCAD_airfoil/blob/master/airfoil.scad
 
-$airfoil_fn = 120;
+$airfoil_fn = 250;
 $close_airfoils = true;
 
   function foil_y(x, c, t) = 
