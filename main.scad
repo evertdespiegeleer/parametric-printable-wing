@@ -2,11 +2,13 @@ include <lib/airfoil.scad>
 include <lib/grid.scad>
 
 // ----- Wing settings ----- 
-$wing_length = 165 / 4 * 4;
+$wing_length = 26;
 $naca_airfoil = 4412;
 $wing_chord_length = 165;
 $rib_grid_distance = 165 / 4 / sqrt(2);
 $airfoil_cutoff_chord_fraction = 0.98;
+
+$angle_of_incedence = 2;
 
 // ----- Structure settings ----- 
 // For ribs running all the way through the wing, set this value very high (greater than then chord length).
@@ -68,7 +70,8 @@ module generateSparStructureGap() {
     linear_extrude(height = $wing_length)
     union() {
         offset(delta = 1)
-            circle(d=$spar_diameter, $fn=30);
+            rotate([0, 0, $angle_of_incedence])
+            square(size = [20 + 3, 15 + 0.8], center=true);
         square(size = [2, $wing_chord_length*2], center=true);
     }
 }
@@ -78,7 +81,8 @@ module generateSparStructure() {
     translateToMclPoint($wing_chord_length, $naca_airfoil, $spar_position_chord_fraction)
     linear_extrude(height = $wing_length)
     union() {
-        circle(d=$spar_diameter, $fn=30);
+        rotate([0, 0, $angle_of_incedence])
+        square(size = [20 + 3, 15 + 0.8], center=true);
         translate([0, -0.5, 0])
         translateFromMclToSurface($wing_chord_length, $naca_airfoil, $spar_position_chord_fraction)
         translate([0, - $wing_chord_length, 0])
