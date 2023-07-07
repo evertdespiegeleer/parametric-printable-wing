@@ -63,9 +63,9 @@ module generateWing() {
 
 /// Alignment spar
 module generateAlignmentSpar2D() {
-    translate([0, -3, 0])
+    translate([0, -2.7, 0])
     translateToMclPoint($wing_chord_length, $naca_airfoil, 0.05) {
-        circle(d=3.3, $fn=30);
+        circle(d=3.9, $fn=30);
         translate([0, -$wing_chord_length / 2, 0])
         square(size = [0.1, $wing_chord_length], center=true);
     }
