@@ -2,7 +2,7 @@ include <lib/airfoil.scad>
 include <lib/grid.scad>
 
 // ----- Wing settings ----- 
-$wing_length = 165 / 4 * 0.5;
+$wing_length = 165 / 4 * 4;
 $naca_airfoil = 4412;
 $wing_chord_length = 165;
 $rib_grid_distance = 165 / 4 / sqrt(2);
